@@ -1,9 +1,18 @@
 <script lang="ts">
   import Navbar from '$lib/Navbar.svelte'
   import SearchBar from '$lib/SearchBar.svelte'
+  import { onMount } from 'svelte'
   import '../app.css'
 
   let collapse = false
+
+  onMount(() => {
+    try {
+      'serviceWorker' in navigator && navigator.serviceWorker.register('/sw.js')
+    } catch (err) {
+      console.error(err)
+    }
+  })
 </script>
 
 <header class:collapse>

@@ -1,0 +1,17 @@
+{
+  "short_name": "Wallet",
+  "name": "Wallet by trmid.eth",
+  "description": "Completely client-side web wallet with account abstraction and a dapp browser.",
+  "start_url": "/",
+  "scope": "/",
+  "theme_color": "#e7e7e7",
+  "background_color": "#232323",
+  "display": "fullscreen",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    }
+  ]
+}
