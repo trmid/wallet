@@ -48,8 +48,17 @@ export const deriveColorsFromManifest = (manifest: any) => {
 export const updateBookmarkInfo = (src: string, manifest: any) => {
   const { primary, bg } = deriveColorsFromManifest(manifest)
   bookmarkInfo.update((b) => {
-    const iconUrl = new URL(src)
-    iconUrl.pathname = (manifest?.icons ?? [{ src: undefined }])[0].src ?? '/'
+    let iconUrl = new URL(src)
+    iconUrl.search = ''
+    if (manifest.iconPath) {
+      if (manifest.iconPath.startsWith('http')) {
+        iconUrl = new URL(manifest.iconPath)
+      } else {
+        iconUrl.pathname = manifest.iconPath
+      }
+    } else {
+      iconUrl.pathname = (manifest?.icons ?? [{ src: undefined }])[0].src ?? '/'
+    }
     b[src] = {
       name: manifest?.short_name ?? manifest?.name ?? src,
       description: manifest?.description ?? '',
