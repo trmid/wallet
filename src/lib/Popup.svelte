@@ -18,31 +18,33 @@
   })
 </script>
 
+<svelte:window
+  on:click={() => requestClose()}
+  on:keydown|stopPropagation={(e) => {
+    e.key === 'Escape' ? requestClose() : null
+  }}
+/>
+
 <!-- svelte-ignore a11y-no-static-element-interactions -->
-<div
-  id="popup"
-  on:click={requestClose}
-  on:keypress={(e) => (e.key === 'Escape' ? requestClose() : null)}
->
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
-  <!-- svelte-ignore a11y-no-static-element-interactions -->
-  <div id="container" on:click|stopPropagation>
-    <div>
-      <slot />
-    </div>
-    {#if showCloseButton}
-      <div id="close" on:click={requestClose}>x</div>
-    {/if}
+<!-- svelte-ignore a11y-click-events-have-key-events -->
+<div id="popup" on:click|stopPropagation>
+  <div>
+    <slot />
   </div>
+  {#if showCloseButton}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <div id="close" on:click={requestClose}>
+      <i class="icofont-ui-close"></i>
+    </div>
+  {/if}
 </div>
 
 <style>
   #popup {
     z-index: 100;
     position: var(--popup-position, fixed);
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background-color: var(--popup-bg, var(--bg));
+    color: var(--popup-color, var(--primary));
     width: var(--popup-width, 400px);
     height: var(--popup-height, 300px);
     max-width: var(--popup-max-width, 100vw);
@@ -50,21 +52,11 @@
     top: var(--popup-top, 0);
     left: var(--popup-left, 0);
     transform: var(--popup-transform, '');
-
-    --popup-margin: 0px;
-  }
-
-  #container {
-    position: relative;
-    background-color: var(--bg);
+    padding: var(--popup-padding, 1rem);
     box-shadow: 3px 3px 5px #0008;
     border: 1px solid currentColor;
     border-radius: 5px;
     overflow: auto;
-    margin: auto;
-    padding: var(--popup-padding, 1rem);
-    width: calc(100% - var(--popup-margin) - var(--popup-margin));
-    height: calc(100% - var(--popup-margin) - var(--popup-margin));
   }
 
   #close {

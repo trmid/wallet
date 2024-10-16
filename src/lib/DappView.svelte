@@ -79,14 +79,6 @@
   }
 </script>
 
-<svelte:window
-  on:click={() => {
-    txHash = undefined
-    txsToReview = []
-    denyTxReview && denyTxReview('Execution cancelled by user...')
-  }}
-/>
-
 <div id="container">
   {#if $appSrc === 'home'}
     <Home></Home>
@@ -115,6 +107,10 @@
   {/if}
   {#if txsToReview.length > 0}
     <Popup
+      on:requestClose={() => {
+        txsToReview = []
+        denyTxReview && denyTxReview('Execution cancelled by user...')
+      }}
       --popup-position="fixed"
       --popup-top="50%"
       --popup-left="50%"
@@ -141,12 +137,13 @@
           <div class="icon-box">
             <i class:icofont-check={txsReviewed[i]}></i>
           </div>
+          <span>TX #{i}</span>
           <a
             on:click|stopPropagation={() => (txsReviewed[i] = true)}
             target="_blank"
             href="https://calldata.swiss-knife.xyz/decoder?calldata={tx.data}&address={tx.to}"
           >
-            TX#{i} | {shortAddress(tx.to)}:{tx.data?.slice(0, 10)}
+            {shortAddress(tx.to)}:{tx.data?.slice(0, 10)}
           </a>
         </div>
       {/each}
@@ -161,6 +158,7 @@
         {/each}
       </div>
       <button
+        class="tx-btn"
         disabled={txsReviewed.includes(false)}
         on:click={() => {
           approveTxReview && approveTxReview(null)
@@ -170,6 +168,7 @@
         <i class="icofont-duotone icofont-play-circle"></i> Send
       </button>
       <button
+        class="tx-btn"
         on:click={() => {
           denyTxReview && denyTxReview('Execution cancelled by user...')
           txsToReview = []
@@ -225,13 +224,14 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 0.5rem;
+    gap: 1rem;
     padding: 0.5rem;
     margin-bottom: 0.5rem;
     background-color: var(--bg-2);
     color: var(--primary);
     border-radius: 5px;
     font-family: monospace;
+    font-size: medium;
   }
 
   .tx-to-review > a,
@@ -244,11 +244,18 @@
   }
 
   .tx-to-review > .icon-box {
-    width: 1.1rem;
-    height: 1.05rem;
+    display: block;
+    font-size: 22px;
+    width: 24px;
+    height: 24px;
+    text-align: center;
     box-sizing: border-box;
     border: 1px solid currentColor;
     border-radius: 3px;
+  }
+
+  .tx-btn {
+    font-size: medium;
   }
 
   .gas-option.selected {
