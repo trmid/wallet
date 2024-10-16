@@ -58,6 +58,7 @@
     position: relative;
     background-color: var(--bg);
     box-shadow: 3px 3px 5px #0008;
+    border: 1px solid currentColor;
     border-radius: 5px;
     overflow: auto;
     margin: auto;

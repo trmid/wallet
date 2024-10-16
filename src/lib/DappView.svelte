@@ -1,13 +1,14 @@
 <script lang="ts">
-  import { type PublicClient, type Address, parseAbi } from 'viem'
+  import { type PublicClient, type Address, parseAbi, formatUnits } from 'viem'
   import IFrameApp from './IFrameApp.svelte'
-  import { activePopupCount, appSrc, walletAddress, chainId } from './stores'
+  import { activePopupCount, appSrc, walletAddress, chainId, maxGasCost } from './stores'
   import type { TX } from './types'
   import type { BundlerClient, UserOperationCall } from 'viem/account-abstraction'
   import {
     PUBLIC_GAS_ERC20_PAYMASTER,
     PUBLIC_GAS_ERC20_MAX_TX_COST,
-    PUBLIC_GAS_ERC20_TOKEN
+    PUBLIC_GAS_ERC20_TOKEN,
+    PUBLIC_GAS_ERC20_DECIMALS
   } from '$env/static/public'
   import Popup from './Popup.svelte'
   import { NETWORKS } from './networks'
@@ -15,6 +16,23 @@
   import Home from './Home.svelte'
 
   export let bundlerClient: BundlerClient
+
+  const defaultGasCost = BigInt(PUBLIC_GAS_ERC20_MAX_TX_COST)
+  const decimals = parseInt(PUBLIC_GAS_ERC20_DECIMALS)
+  const gasOptions: { amount: bigint; text: string }[] = [
+    {
+      amount: defaultGasCost,
+      text: `$${parseFloat(formatUnits(defaultGasCost, decimals)).toFixed(2)}`
+    },
+    {
+      amount: defaultGasCost * 10n,
+      text: `$${parseFloat(formatUnits(defaultGasCost * 10n, decimals)).toFixed(2)}`
+    },
+    {
+      amount: defaultGasCost * 100n,
+      text: `$${parseFloat(formatUnits(defaultGasCost * 100n, decimals)).toFixed(2)}`
+    }
+  ]
 
   let publicClient: PublicClient
   $: publicClient = bundlerClient.client as PublicClient
@@ -49,7 +67,7 @@
           to: PUBLIC_GAS_ERC20_TOKEN as Address,
           abi: parseAbi(['function approve(address,uint256) view']),
           functionName: 'approve',
-          args: [PUBLIC_GAS_ERC20_PAYMASTER as Address, BigInt(PUBLIC_GAS_ERC20_MAX_TX_COST)]
+          args: [PUBLIC_GAS_ERC20_PAYMASTER as Address, BigInt($maxGasCost)]
         } as any,
         ...(txs as UserOperationCall[])
       ]
@@ -61,7 +79,13 @@
   }
 </script>
 
-<svelte:window on:click={() => (txHash = undefined)} />
+<svelte:window
+  on:click={() => {
+    txHash = undefined
+    txsToReview = []
+    denyTxReview && denyTxReview('Execution cancelled by user...')
+  }}
+/>
 
 <div id="container">
   {#if $appSrc === 'home'}
@@ -102,7 +126,7 @@
       --popup-transform="translate(-50%, -50%)"
       showCloseButton={false}
     >
-      <h3>Review Transactions:</h3>
+      <h3>Review Transactions</h3>
       {#each txsToReview as tx, i}
         <!-- svelte-ignore a11y-click-events-have-key-events -->
         <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
@@ -118,13 +142,24 @@
             <i class:icofont-check={txsReviewed[i]}></i>
           </div>
           <a
-            on:click|stopPropagation
+            on:click|stopPropagation={() => (txsReviewed[i] = true)}
             target="_blank"
             href="https://calldata.swiss-knife.xyz/decoder?calldata={tx.data}&address={tx.to}"
-            >TX#{i} | {shortAddress(tx.to)}:{tx.data?.slice(0, 10)}</a
           >
+            TX#{i} | {shortAddress(tx.to)}:{tx.data?.slice(0, 10)}
+          </a>
         </div>
       {/each}
+      <div class="gas-cost">
+        <strong>Max gas cost:</strong>
+        {#each gasOptions as gasOption}
+          <button
+            class="gas-option"
+            class:selected={$maxGasCost == gasOption.amount}
+            on:click={() => ($maxGasCost = gasOption.amount)}>{gasOption.text}</button
+          >
+        {/each}
+      </div>
       <button
         disabled={txsReviewed.includes(false)}
         on:click={() => {
@@ -184,7 +219,8 @@
     z-index: 2;
   }
 
-  .tx-to-review {
+  .tx-to-review,
+  .gas-cost {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -192,13 +228,13 @@
     padding: 0.5rem;
     margin-bottom: 0.5rem;
     background-color: var(--bg-2);
-    color: var(--primary-color);
-    border-radius: 3px;
+    color: var(--primary);
+    border-radius: 5px;
     font-family: monospace;
   }
 
   .tx-to-review > a {
-    text-decoration: none;
+    color: currentColor;
   }
 
   .tx-to-review.checked {
@@ -211,5 +247,10 @@
     box-sizing: border-box;
     border: 1px solid currentColor;
     border-radius: 3px;
+  }
+
+  .gas-option.selected {
+    color: var(--bg);
+    background-color: var(--primary);
   }
 </style>
