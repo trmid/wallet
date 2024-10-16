@@ -58,7 +58,7 @@
       denyTxReview = reject
     })
 
-    const pendingHash = await bundlerClient.sendUserOperation({
+    const userOpHash = await bundlerClient.sendUserOperation({
       paymasterContext: {
         token: PUBLIC_GAS_ERC20_TOKEN as Address
       },
@@ -72,7 +72,7 @@
         ...(txs as UserOperationCall[])
       ]
     })
-    const receipt = await bundlerClient.waitForUserOperationReceipt({ hash: pendingHash })
+    const receipt = await bundlerClient.waitForUserOperationReceipt({ hash: userOpHash })
     console.log(receipt)
     txHash = receipt.receipt.transactionHash
     return receipt.receipt.transactionHash

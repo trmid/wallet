@@ -1,8 +1,12 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte'
   import { IFrameCommunicator } from './iframeCommunicator'
-  import type { MethodToResponse, RPCPayload } from './iframeCommunicatorTypes'
-  import { Methods } from './iframeCommunicatorTypes'
+  import type {
+    GatewayTransactionDetails,
+    MethodToResponse,
+    RPCPayload
+  } from './iframeCommunicatorTypes'
+  import { Methods, TransactionStatus } from './iframeCommunicatorTypes'
   import { type Address, type PublicClient } from 'viem'
   import type { TX } from './types'
   import { PUBLIC_CHAIN_ID } from '$env/static/public'
@@ -78,6 +82,16 @@
       } else {
         communicator?.send('Error: TXs not Completed', msg.data.id, true)
       }
+    })
+
+    communicator.on(Methods.getTxBySafeTxHash, async (msg) => {
+      const { safeTxHash } = msg.data.params as any
+      return {
+        txId: safeTxHash,
+        txStatus: TransactionStatus.SUCCESS,
+        txInfo: {} as any,
+        txHash: safeTxHash
+      } satisfies GatewayTransactionDetails
     })
 
     communicator.on(Methods.signMessage, async () => {
