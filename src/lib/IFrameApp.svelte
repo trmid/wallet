@@ -1,0 +1,88 @@
+<script lang="ts">
+  import { onDestroy, onMount } from 'svelte'
+  import { IFrameCommunicator } from './iframeCommunicator'
+  import type { MethodToResponse, RPCPayload } from './iframeCommunicatorTypes'
+  import { Methods } from './iframeCommunicatorTypes'
+  import { type Address, type PublicClient } from 'viem'
+  import type { TX } from './types'
+  import { PUBLIC_CHAIN_ID } from '$env/static/public'
+
+  export let src: string
+  export let publicClient: PublicClient
+  export let safeAddress: Address
+  export let sendTxs: (txs: TX[]) => Promise<`0x${string}` | null>
+
+  let iframe: HTMLIFrameElement | undefined
+  let communicator: IFrameCommunicator | undefined
+
+  console.log(safeAddress)
+
+  onMount(() => {
+    if (!iframe) throw new Error('Missing iframe...')
+    communicator = new IFrameCommunicator(iframe)
+    communicator.on(Methods.getSafeInfo, async () => ({
+      safeAddress,
+      chainId: PUBLIC_CHAIN_ID,
+      owners: [],
+      threshold: 1,
+      isReadOnly: false
+    }))
+
+    communicator.on(Methods.getEnvironmentInfo, async () => ({
+      origin: document.location.origin
+    }))
+
+    communicator.on(Methods.rpcCall, async (msg) => {
+      const params = msg.data.params as RPCPayload
+      try {
+        const response = (await publicClient.request({
+          method: params.call as any,
+          params: params.params as any
+        })) as MethodToResponse['rpcCall']
+        return response
+      } catch (err) {
+        return err
+      }
+    })
+
+    communicator.on(Methods.sendTransactions, async (msg) => {
+      console.log(msg)
+      const transactions = ((msg.data.params as any).txs as any[]).map(({ to, ...rest }) => ({
+        to,
+        ...rest
+      }))
+      const txHash = await sendTxs(transactions)
+      if (txHash) {
+        communicator?.send(
+          { safeTxHash: txHash } satisfies MethodToResponse[Methods.sendTransactions],
+          msg.data.id
+        )
+      } else {
+        communicator?.send('Error: TXs not Completed', msg.data.id, true)
+      }
+    })
+
+    communicator.on(Methods.signMessage, async () => {
+      console.log('sign not supported')
+    })
+
+    communicator.on(Methods.signTypedMessage, async () => {
+      console.log('sign not supported')
+    })
+  })
+
+  onDestroy(() => {
+    communicator?.clear()
+  })
+</script>
+
+<iframe bind:this={iframe} title="IFrame App {src}" {src} frameborder="0">
+  Your browser does not support IFrames...
+</iframe>
+
+<style>
+  iframe {
+    width: 100%;
+    height: 100%;
+  }
+</style>
