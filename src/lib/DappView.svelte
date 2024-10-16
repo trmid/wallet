@@ -197,6 +197,7 @@
       <h4>Receipt:</h4>
       <p>
         <a
+          class="tx-link"
           target="_blank"
           href="{NETWORKS[$chainId].blockExplorers?.default?.url ?? '#'}/tx/{txHash}"
           >{shortAddress(txHash)}</a
@@ -233,7 +234,8 @@
     font-family: monospace;
   }
 
-  .tx-to-review > a {
+  .tx-to-review > a,
+  .tx-link {
     color: currentColor;
   }
 
