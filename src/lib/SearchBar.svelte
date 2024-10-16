@@ -1,9 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { appSrc, bookmarks } from './stores'
+  import { appSrc, bookmarkInfo, bookmarks } from './stores'
   import Popup from './Popup.svelte'
+  import { fetchManifest, updateBookmarkInfo } from './web'
 
-  let hotSrc = 'https://smold.app/'
+  const defaultApp = 'https://smold.app/'
+
+  let hotSrc = 'home'
   let mounted = false
   let showingBookmarks = false
 
@@ -38,7 +41,7 @@
     localStorage.setItem('bookmarks', JSON.stringify($bookmarks))
   }
 
-  onMount(() => {
+  onMount(async () => {
     const searchParams = new URLSearchParams(location.search)
     hotSrc =
       decodeURIComponent(searchParams.get('app') ?? '') ||
@@ -55,6 +58,29 @@
         }
       } catch (err) {
         localStorage.removeItem('bookmarks')
+      }
+    }
+    if ($bookmarks.length == 0) {
+      $bookmarks = [defaultApp]
+    }
+
+    try {
+      $bookmarkInfo = JSON.parse(localStorage.getItem('bookmarkInfo') ?? '{}')
+    } catch (err) {
+      localStorage.removeItem('bookmarkInfo')
+      $bookmarkInfo = {}
+    }
+
+    // Queue manifest updates for bookmarks not stored in info
+    for (const bookmark of $bookmarks) {
+      if (!$bookmarkInfo[bookmark]) {
+        fetchManifest(bookmark)
+          .then((manifest) => {
+            if (manifest) {
+              updateBookmarkInfo(bookmark, manifest)
+            }
+          })
+          .catch(console.error)
       }
     }
 

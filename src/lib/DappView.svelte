@@ -64,27 +64,25 @@
 <svelte:window on:click={() => (txHash = undefined)} />
 
 <div id="container">
-  {#if $appSrc && $walletAddress}
+  {#if $appSrc === 'home'}
+    <Home></Home>
+  {:else if $appSrc && $walletAddress}
     {#key $appSrc}
       {#key $walletAddress}
-        {#if $appSrc === 'home'}
-          <Home></Home>
-        {:else}
-          <IFrameApp
-            src={$appSrc}
-            safeAddress={$walletAddress}
-            {publicClient}
-            sendTxs={async (txs) => {
-              console.log(txs)
-              try {
-                return await executeTxs(txs)
-              } catch (err) {
-                console.error(err)
-                return null
-              }
-            }}
-          />
-        {/if}
+        <IFrameApp
+          src={$appSrc}
+          safeAddress={$walletAddress}
+          {publicClient}
+          sendTxs={async (txs) => {
+            console.log(txs)
+            try {
+              return await executeTxs(txs)
+            } catch (err) {
+              console.error(err)
+              return null
+            }
+          }}
+        />
       {/key}
     {/key}
   {/if}

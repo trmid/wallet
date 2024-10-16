@@ -2,10 +2,13 @@ import { PUBLIC_CHAIN_ID } from '$env/static/public'
 import { writable } from 'svelte/store'
 import { type Address } from 'viem'
 import type { BundlerClient } from 'viem/account-abstraction'
+import { deriveColorsFromManifest, fetchManifest, updateBookmarkInfo } from './web'
 
 export const bundlerClient = writable<BundlerClient | undefined>(undefined)
 export const walletAddress = writable<Address>(undefined)
 export const appSrc = writable<string | undefined>()
+export const primaryColor = writable<string>('#e7e7e7')
+export const bgColor = writable<string>('#232323')
 export const chainId = writable<number>(parseInt(PUBLIC_CHAIN_ID))
 export const activePopupCount = writable<number>(0)
 export const bookmarks = writable<string[]>([])
@@ -29,62 +32,21 @@ appSrc.subscribe(async (src) => {
 
     // Colors and Manifest Info:
     try {
-      const url = new URL(src)
-      url.pathname = '/manifest.json'
-      const res = await fetch(url)
-      if (res.status === 200) {
-        const manifest = await res.json()
+      const manifest = await fetchManifest(src)
+      if (!manifest) throw new Error(`No manifest available for ${src}`)
 
-        let primary = manifest.title_color?.toLowerCase()
-        let bg = manifest.background_color?.toLowerCase()
-        let bg2 = manifest.background_color?.toLowerCase()
-        let secondary = manifest.theme_color?.toLowerCase()
-        if (bg.startsWith('#')) {
-          if (bg.length === 4) {
-            bg = `#${bg.charAt(1)}${bg.charAt(1)}${bg.charAt(2)}${bg.charAt(2)}${bg.charAt(3)}${bg.charAt(3)}`
-            bg2 = bg
-          }
-          const r = parseInt(`0x${bg2.substring(1, 3)}`)
-          const g = parseInt(`0x${bg2.substring(3, 5)}`)
-          const b = parseInt(`0x${bg2.substring(5, 7)}`)
-          bg2 =
-            '#' +
-            Math.min(255, Math.max(0, r > 128 ? r - 10 : r + 10)).toString(16) +
-            Math.min(255, Math.max(0, g > 128 ? g - 10 : g + 10)).toString(16) +
-            Math.min(255, Math.max(0, b > 128 ? b - 10 : b + 10)).toString(16)
-          if (!primary) {
-            if ((r + g + b) / 3 > 128) primary = '#000000'
-            else primary = '#ffffff'
-          }
-        }
-        if (primary && bg && secondary && primary !== bg) {
-          // use the colors
-        } else {
-          bg = '#231f20'
-          bg2 = '#17171a'
-          primary = '#ffcad9'
-          secondary = '#284051'
-        }
-        document.documentElement.style.setProperty('--primary', primary)
-        document.documentElement.style.setProperty('--secondary', secondary)
-        document.documentElement.style.setProperty('--bg', bg)
-        document.documentElement.style.setProperty('--bg-2', bg2)
+      const { primary, secondary, bg, bg2 } = deriveColorsFromManifest(manifest)
 
-        // Add bookmark info
-        bookmarkInfo.update((b) => {
-          const iconUrl = new URL(src)
-          iconUrl.pathname = (manifest?.icons ?? [{ src: undefined }])[0].src ?? '/'
-          b[src] = {
-            name: manifest?.short_name ?? manifest?.name ?? src,
-            description: manifest?.description ?? '',
-            icon: iconUrl.pathname === '/' ? undefined : iconUrl.toString(),
-            backgroundColor: bg,
-            color: primary
-          }
-          localStorage.setItem('bookmarkInfo', JSON.stringify(b))
-          return b
-        })
-      }
+      document.documentElement.style.setProperty('--primary', primary)
+      document.documentElement.style.setProperty('--secondary', secondary)
+      document.documentElement.style.setProperty('--bg', bg)
+      document.documentElement.style.setProperty('--bg-2', bg2)
+
+      primaryColor.set(primary)
+      bgColor.set(bg)
+
+      // Add bookmark info
+      updateBookmarkInfo(src, manifest)
     } catch (err) {
       console.error(new Error('Failed to fetch app manifest.'))
       console.error(err)
@@ -92,6 +54,9 @@ appSrc.subscribe(async (src) => {
       document.documentElement.style.removeProperty('--secondary')
       document.documentElement.style.removeProperty('--bg')
       document.documentElement.style.removeProperty('--bg-2')
+
+      primaryColor.set('#232323')
+      bgColor.set('#e7e7e7')
     }
   }
 })
