@@ -55,7 +55,7 @@
     padding: var(--popup-padding, 1rem);
     box-shadow: 3px 3px 5px #0008;
     border: 1px solid currentColor;
-    border-radius: 5px;
+    border-radius: var(--popup-border-radius, 1rem);
     overflow: auto;
   }
 

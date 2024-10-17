@@ -4,11 +4,12 @@
   import Popup from './Popup.svelte'
   import { fetchManifest, updateBookmarkInfo } from './web'
 
-  const defaultApp = 'https://smold.app/'
+  const defaultApp = new URL('https://smold.app/').toString()
 
-  let hotSrc = 'home'
+  let hotSrc = 'Home'
   let mounted = false
   let showingBookmarks = false
+  let srcInput: HTMLInputElement
 
   $: $appSrc && updateHotSrc($appSrc)
 
@@ -29,16 +30,25 @@
     showingBookmarks = false
   }
 
-  const addBookmark = () => {
-    if ($appSrc) {
-      $bookmarks = [...$bookmarks, $appSrc]
-      localStorage.setItem('bookmarks', JSON.stringify($bookmarks))
+  const saveBookmarks = () => {
+    localStorage.setItem('bookmarks', JSON.stringify($bookmarks))
+  }
+
+  const toggleBookmark = () => {
+    if ($appSrc && $appSrc !== 'Home') {
+      const formattedUrl = new URL($appSrc).toString()
+      if ($bookmarks.includes(formattedUrl)) {
+        $bookmarks = $bookmarks.filter((x) => x !== formattedUrl)
+      } else {
+        $bookmarks = [...$bookmarks, formattedUrl]
+      }
+      saveBookmarks()
     }
   }
 
   const deleteBookmark = (bookmark: string) => {
     $bookmarks = $bookmarks.filter((x) => x !== bookmark)
-    localStorage.setItem('bookmarks', JSON.stringify($bookmarks))
+    saveBookmarks()
   }
 
   onMount(async () => {
@@ -54,7 +64,7 @@
       try {
         const bookmarksArray = JSON.parse(bookmarksStr)
         if (Array.isArray(bookmarksArray)) {
-          $bookmarks = bookmarksArray
+          $bookmarks = bookmarksArray.map((x) => new URL(x).toString())
         }
       } catch (err) {
         localStorage.removeItem('bookmarks')
@@ -63,6 +73,7 @@
     if ($bookmarks.length == 0) {
       $bookmarks = [defaultApp]
     }
+    saveBookmarks()
 
     try {
       $bookmarkInfo = JSON.parse(localStorage.getItem('bookmarkInfo') ?? '{}')
@@ -107,13 +118,21 @@
         id="src-input"
         type="text"
         autocomplete="off"
+        bind:this={srcInput}
         bind:value={hotSrc}
         on:keypress={(e) => (e.key === 'Enter' ? go() : null)}
         placeholder="App URL"
-        on:focus={showBookmarks}
+        on:focus={(e) => {
+          showBookmarks()
+          srcInput.select()
+        }}
       />
-      {#if hotSrc === $appSrc}
-        <button on:click={addBookmark} disabled={$bookmarks.includes(hotSrc)}>
+      {#if hotSrc === $appSrc && $appSrc !== 'Home'}
+        <button
+          on:click={toggleBookmark}
+          class="bookmark-btn"
+          class:bookmarked={$bookmarks.includes(hotSrc)}
+        >
           <i class="icofont-duotone icofont-bookmark"></i>
         </button>
       {/if}
@@ -124,23 +143,42 @@
           --popup-left="0"
           --popup-width="100%"
           --popup-height="fit-content"
-          --popup-max-height="300px"
+          --popup-max-height="80vh"
           --popup-padding="0.5rem"
+          --popup-border-radius="0.25rem"
           showCloseButton={false}
         >
           <div id="bookmarks">
-            {#each $bookmarks as bookmark}
+            {#each $bookmarks as bookmark, i}
               <div class="bookmark">
                 <button
+                  title="Swap Order"
+                  class="swap-btn"
+                  class:hide={i == 0}
+                  on:click={() => {
+                    $bookmarks[i] = $bookmarks[i - 1]
+                    $bookmarks[i - 1] = bookmark
+                    saveBookmarks()
+                  }}
+                >
+                  <i class="icofont-arrow-down"></i>
+                  <i class="icofont-arrow-up"></i>
+                </button>
+                <button
+                  class="go-to-btn"
                   on:click={() => {
                     hotSrc = bookmark
                     go()
                   }}
                   title={bookmark}
                 >
-                  {bookmark}
+                  {$bookmarkInfo[bookmark]?.name || bookmark}
                 </button>
-                <button on:click={() => deleteBookmark(bookmark)}>
+                <button
+                  title="Delete Bookmark"
+                  class="delete-btn"
+                  on:click={() => deleteBookmark(bookmark)}
+                >
                   <i class="icofont-duotone icofont-purge"></i>
                 </button>
               </div>
@@ -175,11 +213,17 @@
     display: flex;
     flex-direction: row;
     gap: 0.25rem;
+    flex-grow: 1;
   }
 
   #src-input {
     width: 300px;
-    max-width: 75vw;
+    max-width: 90vw;
+    flex-grow: 1;
+  }
+
+  .bookmark-btn.bookmarked {
+    opacity: 0.5;
   }
 
   #bookmarks {
@@ -194,22 +238,48 @@
   }
 
   .bookmark {
+    position: relative;
     display: flex;
     flex-direction: row;
     gap: 0.25rem;
   }
 
-  .bookmark > button:first-child {
+  .bookmark > button.swap-btn {
+    transform: translateY(-55%);
+    padding: 2px;
+  }
+
+  .bookmark > button.swap-btn.hide {
+    visibility: hidden;
+  }
+
+  button.swap-btn > i {
+    display: inline-block;
+  }
+
+  button.swap-btn > i:first-child {
+    position: relative;
+    top: 2px;
+    left: 5px;
+  }
+
+  button.swap-btn > i:last-child {
+    position: relative;
+    bottom: 2px;
+    right: 5px;
+  }
+
+  .bookmark > button.go-to-btn {
     flex-grow: 1;
   }
 
-  .bookmark > button:first-child {
+  .bookmark > button.go-to-btn {
     width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
-  .bookmark > button:last-child {
+  .bookmark > button.delete-btn {
     color: crimson;
   }
 </style>

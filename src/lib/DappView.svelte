@@ -80,7 +80,7 @@
 </script>
 
 <div id="container">
-  {#if $appSrc === 'home'}
+  {#if $appSrc === 'Home'}
     <Home></Home>
   {:else if $appSrc && $walletAddress}
     {#key $appSrc}
@@ -210,6 +210,7 @@
   #container {
     position: relative;
     flex-grow: 1;
+    background-color: var(--primary);
   }
 
   #click-capture {
@@ -229,7 +230,7 @@
     margin-bottom: 0.5rem;
     background-color: var(--bg-2);
     color: var(--primary);
-    border-radius: 5px;
+    border-radius: 0.25rem;
     font-family: monospace;
     font-size: medium;
   }

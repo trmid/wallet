@@ -4,8 +4,8 @@
   "description": "Completely client-side web wallet with account abstraction and a dapp browser.",
   "start_url": "/",
   "scope": "/",
-  "theme_color": "#e7e7e7",
-  "background_color": "#232323",
+  "theme_color": "#eeeeee",
+  "background_color": "#2f2f2f",
   "display": "fullscreen",
   "iconPath": "/icon-square.png",
   "icons": [

@@ -16,7 +16,7 @@
   <div>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <span on:click={() => ($appSrc = 'home')}>
+    <span on:click={() => ($appSrc = 'Home')}>
       <svg
         width="56mm"
         height="56mm"
@@ -78,7 +78,7 @@
     --popup-max-width="90vw"
     --popup-height="fit-content"
     --popup-max-height="90vh"
-    --popup-padding="1rem"
+    --popup-padding="2rem"
     --popup-transform="translate(-50%, -50%)"
   >
     <div class="wallet-info">
@@ -126,7 +126,11 @@
   }
 
   #logo {
-    font-family: 'Major Mono Display', monospace;
+    position: relative;
+    top: 1px;
+    font-size: 28px;
+    font-family: 'Supermercado One', sans-serif;
+    margin-left: 3px;
   }
 
   button.connected {

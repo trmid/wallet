@@ -45,17 +45,18 @@
     position: absolute;
     left: 50%;
     top: -30px;
-    width: 50px;
-    height: 50px;
+    width: 54px;
+    height: 54px;
     border-radius: 50%;
     transform: translateX(-50%);
-    padding-top: 28px;
+    padding-top: 26px;
     text-align: center;
     z-index: 100;
     background-color: var(--primary);
     color: var(--bg);
     cursor: pointer;
-    font-size: large;
+    font-size: 24px;
+    box-shadow: 1px 2px 5px #0008;
   }
 
   main {

@@ -7,8 +7,8 @@ import { deriveColorsFromManifest, fetchManifest, updateBookmarkInfo } from './w
 export const bundlerClient = writable<BundlerClient | undefined>(undefined)
 export const walletAddress = writable<Address>(undefined)
 export const appSrc = writable<string | undefined>()
-export const primaryColor = writable<string>('#e7e7e7')
-export const bgColor = writable<string>('#232323')
+export const primaryColor = writable<string>('#eeeeee')
+export const bgColor = writable<string>('#2f2f2f')
 export const chainId = writable<number>(parseInt(PUBLIC_CHAIN_ID))
 export const maxGasCost = writable<bigint>(BigInt(PUBLIC_GAS_ERC20_MAX_TX_COST))
 export const activePopupCount = writable<number>(0)
@@ -56,8 +56,8 @@ appSrc.subscribe(async (src) => {
       document.documentElement.style.removeProperty('--bg')
       document.documentElement.style.removeProperty('--bg-2')
 
-      primaryColor.set('#232323')
-      bgColor.set('#e7e7e7')
+      primaryColor.set('#2f2f2f')
+      bgColor.set('#eeeeee')
     }
   }
 })
