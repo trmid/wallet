@@ -22,8 +22,6 @@
   let iframe: HTMLIFrameElement | undefined
   let communicator: IFrameCommunicator | undefined
 
-  console.log(safeAddress)
-
   onMount(() => {
     if (!iframe) throw new Error('Missing iframe...')
     communicator = new IFrameCommunicator(iframe)
