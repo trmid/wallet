@@ -19,7 +19,7 @@
 </script>
 
 <svelte:window
-  on:click={() => requestClose()}
+  on:pointerdown={() => requestClose()}
   on:keydown|stopPropagation={(e) => {
     e.key === 'Escape' ? requestClose() : null
   }}
@@ -27,13 +27,13 @@
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div id="popup" on:click|stopPropagation>
+<div id="popup" on:click|stopPropagation on:pointerdown|stopPropagation>
   <div>
     <slot />
   </div>
   {#if showCloseButton}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <div id="close" on:click={requestClose}>
+    <div id="close" title="Close" on:click={requestClose}>
       <i class="icofont-ui-close"></i>
     </div>
   {/if}
@@ -62,15 +62,15 @@
   #close {
     z-index: 2;
     font-family: monospace;
-    font-size: 24px;
+    font-size: medium;
     position: absolute;
     display: flex;
     justify-content: center;
     align-items: center;
     width: 32px;
     height: 32px;
-    top: 0;
-    right: 0;
+    top: 0.5rem;
+    right: 0.5rem;
     cursor: pointer;
     user-select: none;
   }

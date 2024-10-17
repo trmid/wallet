@@ -7,11 +7,12 @@
   "theme_color": "#e7e7e7",
   "background_color": "#232323",
   "display": "fullscreen",
+  "iconPath": "/icon-square.png",
   "icons": [
     {
-      "src": "/favicon.png",
+      "src": "/icon-square.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "256x256"
     }
   ]
 }

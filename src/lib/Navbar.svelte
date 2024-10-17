@@ -1,7 +1,15 @@
-<script>
+<script lang="ts">
   import Loading from './Loading.svelte'
-  import ShortAddress from './ShortAddress.svelte'
+  import Popup from './Popup.svelte'
+  import Address from './Address.svelte'
   import { appSrc, bgColor, bundlerClient, primaryColor, walletAddress } from './stores'
+
+  let showAccountInfo = false
+  let qrCodeContainer: HTMLDivElement | undefined
+
+  $: if (qrCodeContainer) {
+    new QRCode(qrCodeContainer, $walletAddress)
+  }
 </script>
 
 <nav>
@@ -44,17 +52,46 @@
       <span id="logo">Wallet</span>
     </span>
     {#if $bundlerClient}
-      <div class="connected">
+      <button class="connected" on:click={() => (showAccountInfo = true)}>
         <i class="icofont-wallet"></i>
         {#if !!$walletAddress}
-          <ShortAddress address={$walletAddress} enableCopy={true}></ShortAddress>
+          <Address address={$walletAddress} enableCopy={false}></Address>
         {:else}
           <Loading height="0.5rem" />
         {/if}
-      </div>
+      </button>
     {/if}
   </div>
 </nav>
+
+{#if showAccountInfo}
+  <Popup
+    showCloseButton={true}
+    on:requestClose={() => {
+      console.log('close')
+      showAccountInfo = false
+    }}
+    --popup-position="fixed"
+    --popup-top="50%"
+    --popup-left="50%"
+    --popup-width="fit-content"
+    --popup-max-width="90vw"
+    --popup-height="fit-content"
+    --popup-max-height="90vh"
+    --popup-padding="1rem"
+    --popup-transform="translate(-50%, -50%)"
+  >
+    <div class="wallet-info">
+      <h3>Your Wallet</h3>
+      <aside>You can receive tokens to this address on the Base network.</aside>
+      <br />
+      <button>
+        <Address address={$walletAddress} enableCopy={true} showFull={true}></Address>
+      </button>
+      <div class="qr-container" bind:this={qrCodeContainer}></div>
+    </div>
+  </Popup>
+{/if}
 
 <style>
   nav {
@@ -92,11 +129,37 @@
     font-family: 'Major Mono Display', monospace;
   }
 
-  div.connected {
+  button.connected {
     display: flex;
     flex-direction: row;
     align-items: flex-end;
     gap: 0.5rem;
     font-family: monospace;
+  }
+
+  .wallet-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .qr-container {
+    width: 300px;
+    height: 300px;
+    max-width: 90vw;
+    max-height: 90vh;
+    background-color: white;
+    border-radius: 1rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  :global(.qr-container > img) {
+    width: 256px;
+    height: 256px;
   }
 </style>
