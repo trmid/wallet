@@ -151,19 +151,21 @@
           <div id="bookmarks">
             {#each $bookmarks as bookmark, i}
               <div class="bookmark">
-                <button
-                  title="Swap Order"
-                  class="swap-btn"
-                  class:hide={i == 0}
-                  on:click={() => {
-                    $bookmarks[i] = $bookmarks[i - 1]
-                    $bookmarks[i - 1] = bookmark
-                    saveBookmarks()
-                  }}
-                >
-                  <i class="icofont-arrow-down"></i>
-                  <i class="icofont-arrow-up"></i>
-                </button>
+                {#if $bookmarks.length > 1}
+                  <button
+                    title="Swap Order"
+                    class="swap-btn"
+                    class:hide={i == 0}
+                    on:click={() => {
+                      $bookmarks[i] = $bookmarks[i - 1]
+                      $bookmarks[i - 1] = bookmark
+                      saveBookmarks()
+                    }}
+                  >
+                    <i class="icofont-arrow-down"></i>
+                    <i class="icofont-arrow-up"></i>
+                  </button>
+                {/if}
                 <button
                   class="go-to-btn"
                   on:click={() => {
@@ -187,7 +189,7 @@
         </Popup>
       {/if}
     </div>
-    <button on:click={go}>Go <i class="icofont-caret-right"></i></button>
+    <button on:click={go}>Go <i class="icofont-arrow-right"></i></button>
   </div>
 </nav>
 
@@ -201,25 +203,26 @@
     max-width: 1280px;
     display: flex;
     flex-direction: row;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    flex-wrap: nowrap;
+    gap: 0.25rem;
     padding: 0.5rem 1rem;
     font-family: monospace;
   }
 
   .input-wrapper {
     position: relative;
-    height: 32px;
     display: flex;
     flex-direction: row;
+    flex-wrap: nowrap;
     gap: 0.25rem;
     flex-grow: 1;
   }
 
   #src-input {
-    width: 300px;
+    min-width: 100px;
     max-width: 90vw;
     flex-grow: 1;
+    flex-shrink: 1;
   }
 
   .bookmark-btn.bookmarked {

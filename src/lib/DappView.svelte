@@ -256,7 +256,7 @@
   }
 
   .tx-btn {
-    font-size: medium;
+    font-size: large;
   }
 
   .gas-option.selected {

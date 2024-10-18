@@ -136,7 +136,7 @@
   button.connected {
     display: flex;
     flex-direction: row;
-    align-items: flex-end;
+    align-items: center;
     gap: 0.5rem;
     font-family: monospace;
   }
