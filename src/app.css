@@ -35,9 +35,13 @@ textarea {
   border: none;
   background-color: var(--bg-2);
   color: var(--primary);
-  border-radius: 0.25rem;
+  border-radius: 0.5rem;
   padding: 0.5rem 1rem;
   font-size: 15px;
+}
+
+button {
+  cursor: pointer;
 }
 
 button:hover {

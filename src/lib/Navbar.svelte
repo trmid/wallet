@@ -17,7 +17,7 @@
   <div>
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <span on:click={() => ($appSrc = 'Home')}>
+    <span on:click={() => ($appSrc = 'wallet://home')}>
       <svg
         width="56mm"
         height="56mm"
@@ -76,20 +76,28 @@
     --popup-top="50%"
     --popup-left="50%"
     --popup-width="fit-content"
-    --popup-max-width="90vw"
+    --popup-max-width="95vw"
     --popup-height="fit-content"
-    --popup-max-height="90vh"
-    --popup-padding="2rem"
+    --popup-max-height="95vh"
+    --popup-padding="3rem"
     --popup-transform="translate(-50%, -50%)"
   >
     <div class="wallet-info">
       <h3>Your Wallet</h3>
-      <aside>You can receive tokens to this address on the {chainInfo.name} network.</aside>
-      <br />
       <button>
-        <Address address={$walletAddress} enableCopy={true} showFull={true}></Address>
+        <Address address={$walletAddress} enableCopy={true}>
+          <i class="icofont-ui-copy" slot="before"></i>
+        </Address>
       </button>
       <div class="qr-container" bind:this={qrCodeContainer}></div>
+      <br />
+      <aside class="chain-warning">
+        <i class="icofont-warning-alt"></i>
+        <span
+          >You can receive tokens to this address on the {chainInfo.name}
+          network.</span
+        >
+      </aside>
     </div>
   </Popup>
 {/if}
@@ -161,6 +169,19 @@
     display: flex;
     justify-content: center;
     align-items: center;
+  }
+
+  .chain-warning {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 0.5rem;
+    max-width: 300px;
+    padding: 0.5rem;
+  }
+
+  .chain-warning > i {
+    font-size: 24px;
   }
 
   :global(.qr-container > img) {

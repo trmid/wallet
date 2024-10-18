@@ -56,7 +56,7 @@
     color: inherit;
     background-color: var(--bg-2);
     padding: 1.5rem 1rem;
-    border-radius: 0.25rem 1rem 1rem 1rem;
+    border-radius: 0.5rem 1.5rem 1.5rem 1.5rem;
     box-shadow: 3px 3px 7px #0008;
     overflow: hidden;
     width: 100%;

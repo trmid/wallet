@@ -6,7 +6,7 @@
 
   const defaultApp = new URL('https://smold.app/').toString()
 
-  let hotSrc = 'Home'
+  let hotSrc = 'wallet://home'
   let mounted = false
   let showingBookmarks = false
   let srcInput: HTMLInputElement
@@ -18,6 +18,7 @@
   }
 
   const go = async () => {
+    hotSrc = new URL(hotSrc).toString()
     appSrc.set(hotSrc)
   }
 
@@ -35,7 +36,7 @@
   }
 
   const toggleBookmark = () => {
-    if ($appSrc && $appSrc !== 'Home') {
+    if ($appSrc && $appSrc !== 'wallet://home') {
       const formattedUrl = new URL($appSrc).toString()
       if ($bookmarks.includes(formattedUrl)) {
         $bookmarks = $bookmarks.filter((x) => x !== formattedUrl)
@@ -127,7 +128,7 @@
           srcInput.select()
         }}
       />
-      {#if hotSrc === $appSrc && $appSrc !== 'Home'}
+      {#if hotSrc === $appSrc && $appSrc !== 'wallet://home'}
         <button
           on:click={toggleBookmark}
           class="bookmark-btn"

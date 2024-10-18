@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type PublicClient, type Address, parseAbi, formatUnits } from 'viem'
+  import { type PublicClient, parseAbi } from 'viem'
   import IFrameApp from './IFrameApp.svelte'
   import { activePopupCount, appSrc, walletAddress, maxGasCost } from './stores'
   import type { TX } from './types'
@@ -78,7 +78,7 @@
 </script>
 
 <div id="container">
-  {#if $appSrc === 'Home'}
+  {#if $appSrc === 'wallet://home'}
     <Home></Home>
   {:else if $appSrc && $walletAddress}
     {#key $appSrc}
@@ -250,7 +250,7 @@
     text-align: center;
     box-sizing: border-box;
     border: 1px solid currentColor;
-    border-radius: 3px;
+    border-radius: 5px;
   }
 
   .tx-btn {

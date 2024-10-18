@@ -20,6 +20,7 @@
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <span class="address" title={address} class:copied on:click={copy}>
+  <slot name="before" />
   {#if showFull}
     {address}
   {:else}
@@ -28,6 +29,7 @@
   {#if copied}
     <div class="copy-text">copied!</div>
   {/if}
+  <slot name="after" />
 </span>
 
 <style>
