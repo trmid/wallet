@@ -1,36 +1,34 @@
 <script lang="ts">
   import { type PublicClient, type Address, parseAbi, formatUnits } from 'viem'
   import IFrameApp from './IFrameApp.svelte'
-  import { activePopupCount, appSrc, walletAddress, chainId, maxGasCost } from './stores'
+  import { activePopupCount, appSrc, walletAddress, maxGasCost } from './stores'
   import type { TX } from './types'
   import type { BundlerClient, UserOperationCall } from 'viem/account-abstraction'
-  import {
-    PUBLIC_GAS_ERC20_PAYMASTER,
-    PUBLIC_GAS_ERC20_MAX_TX_COST,
-    PUBLIC_GAS_ERC20_TOKEN,
-    PUBLIC_GAS_ERC20_DECIMALS
-  } from '$env/static/public'
   import Popup from './Popup.svelte'
-  import { NETWORKS } from './networks'
   import { shortAddress } from './address'
   import Home from './Home.svelte'
+  import {
+    chainInfo,
+    defaultTxCostLimit,
+    primaryTokenAddress,
+    paymasterAddress,
+    formatPrimaryToken
+  } from '../config'
 
   export let bundlerClient: BundlerClient
 
-  const defaultGasCost = BigInt(PUBLIC_GAS_ERC20_MAX_TX_COST)
-  const decimals = parseInt(PUBLIC_GAS_ERC20_DECIMALS)
   const gasOptions: { amount: bigint; text: string }[] = [
     {
-      amount: defaultGasCost,
-      text: `$${parseFloat(formatUnits(defaultGasCost, decimals)).toFixed(2)}`
+      amount: defaultTxCostLimit,
+      text: formatPrimaryToken(defaultTxCostLimit)
     },
     {
-      amount: defaultGasCost * 10n,
-      text: `$${parseFloat(formatUnits(defaultGasCost * 10n, decimals)).toFixed(2)}`
+      amount: defaultTxCostLimit * 10n,
+      text: formatPrimaryToken(defaultTxCostLimit * 10n)
     },
     {
-      amount: defaultGasCost * 100n,
-      text: `$${parseFloat(formatUnits(defaultGasCost * 100n, decimals)).toFixed(2)}`
+      amount: defaultTxCostLimit * 100n,
+      text: formatPrimaryToken(defaultTxCostLimit * 100n)
     }
   ]
 
@@ -60,14 +58,14 @@
 
     const userOpHash = await bundlerClient.sendUserOperation({
       paymasterContext: {
-        token: PUBLIC_GAS_ERC20_TOKEN as Address
+        token: primaryTokenAddress
       },
       calls: [
         {
-          to: PUBLIC_GAS_ERC20_TOKEN as Address,
+          to: primaryTokenAddress,
           abi: parseAbi(['function approve(address,uint256) view']),
           functionName: 'approve',
-          args: [PUBLIC_GAS_ERC20_PAYMASTER as Address, BigInt($maxGasCost)]
+          args: [paymasterAddress, BigInt($maxGasCost)]
         } as any,
         ...(txs as UserOperationCall[])
       ]
@@ -198,7 +196,7 @@
         <a
           class="tx-link"
           target="_blank"
-          href="{NETWORKS[$chainId].blockExplorers?.default?.url ?? '#'}/tx/{txHash}"
+          href="{chainInfo.blockExplorers?.default?.url ?? '#'}/tx/{txHash}"
           >{shortAddress(txHash)}</a
         >
       </p>

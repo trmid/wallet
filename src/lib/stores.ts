@@ -1,16 +1,15 @@
-import { PUBLIC_CHAIN_ID, PUBLIC_GAS_ERC20_MAX_TX_COST } from '$env/static/public'
 import { writable } from 'svelte/store'
 import { type Address } from 'viem'
 import type { BundlerClient } from 'viem/account-abstraction'
 import { deriveColorsFromManifest, fetchManifest, updateBookmarkInfo } from './web'
+import { defaultTxCostLimit } from '../config'
 
 export const bundlerClient = writable<BundlerClient | undefined>(undefined)
 export const walletAddress = writable<Address>(undefined)
 export const appSrc = writable<string | undefined>()
 export const primaryColor = writable<string>('#eeeeee')
 export const bgColor = writable<string>('#2f2f2f')
-export const chainId = writable<number>(parseInt(PUBLIC_CHAIN_ID))
-export const maxGasCost = writable<bigint>(BigInt(PUBLIC_GAS_ERC20_MAX_TX_COST))
+export const maxGasCost = writable<bigint>(defaultTxCostLimit)
 export const activePopupCount = writable<number>(0)
 export const bookmarks = writable<string[]>([])
 export const bookmarkInfo = writable<

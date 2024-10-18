@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { bundlerClient, chainId } from './stores'
-  import { NETWORKS } from './networks'
+  import { bundlerClient } from './stores'
   import { createPublicClient, http, type PublicClient } from 'viem'
   import {
     toWebAuthnAccount,
@@ -19,6 +18,7 @@
   import { english } from 'viem/accounts'
   import { onMount } from 'svelte'
   import Popup from './Popup.svelte'
+  import { chainInfo } from '../config'
 
   let fileInput: HTMLInputElement
   let credentialFiles: FileList
@@ -93,7 +93,7 @@
 
   const connectWallet = async () => {
     const publicClient = createPublicClient({
-      chain: NETWORKS[$chainId],
+      chain: chainInfo,
       transport: http(PUBLIC_RPC_URL)
     }) as PublicClient
     let credentialInfo = JSON.parse(localStorage.getItem('walletCredential') || 'null')
@@ -108,7 +108,7 @@
       owners: [webAuthnAccount]
     })
     const pimlicoClient = createPimlicoClient({
-      chain: NETWORKS[$chainId],
+      chain: chainInfo,
       transport: http(PUBLIC_BUNDLER_RPC_URL),
       entryPoint: {
         address: entryPoint06Address,
@@ -117,7 +117,7 @@
     })
     bundlerClient.set(
       createBundlerClient({
-        chain: NETWORKS[$chainId],
+        chain: chainInfo,
         client: publicClient,
         account: smartAccount,
         paymaster: pimlicoClient,

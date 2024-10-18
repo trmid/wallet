@@ -3,6 +3,7 @@
   import Popup from './Popup.svelte'
   import Address from './Address.svelte'
   import { appSrc, bgColor, bundlerClient, primaryColor, walletAddress } from './stores'
+  import { chainInfo } from '../config'
 
   let showAccountInfo = false
   let qrCodeContainer: HTMLDivElement | undefined
@@ -83,7 +84,7 @@
   >
     <div class="wallet-info">
       <h3>Your Wallet</h3>
-      <aside>You can receive tokens to this address on the Base network.</aside>
+      <aside>You can receive tokens to this address on the {chainInfo.name} network.</aside>
       <br />
       <button>
         <Address address={$walletAddress} enableCopy={true} showFull={true}></Address>
