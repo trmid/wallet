@@ -3,8 +3,9 @@
   import { formatPrimaryToken, primaryTokenAddress } from '../config'
   import { walletAddress } from './stores'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
-  import { parseAbi, type Address, type PublicClient } from 'viem'
+  import { type Address, type PublicClient } from 'viem'
   import Loading from './Loading.svelte'
+  import { getBalance } from './balance'
 
   export let bundlerClient: BundlerClient
   export let tokenAddress: Address = primaryTokenAddress
@@ -16,20 +17,15 @@
 
   const dispatch = createEventDispatcher()
 
-  let lastQueryAt: number = 0
   let lastBalance: bigint = -1n
   let errorCount = 0
   let queryNum = 0
   let destroyed = false
+  let queryTimeout: number | null = null
 
   export const queryBalance = async () => {
     if (destroyed) return
-    balance = await (bundlerClient.client as PublicClient).readContract({
-      address: tokenAddress,
-      abi: parseAbi(['function balanceOf(address) view returns (uint256)']),
-      functionName: 'balanceOf',
-      args: [accountAddress]
-    })
+    balance = await getBalance(bundlerClient.client as PublicClient, tokenAddress, accountAddress)
     if (lastBalance > -1n && balance > lastBalance) {
       dispatch('balanceIncrease', {
         accountAddress,
@@ -38,11 +34,10 @@
         balance
       })
     }
-    lastQueryAt = Math.floor(Date.now() / 1000)
     lastBalance = balance
     if (queryIntervalSeconds > 0) {
       if (queryNum < maxQueries) {
-        setTimeout(
+        queryTimeout = setTimeout(
           () => {
             queryBalance().catch(handleQueryError)
           },
@@ -60,6 +55,7 @@
     if (errorCount > 2) {
       console.warn('Too many failed balance queries... stopping query interval.')
       destroyed = true
+      if (queryTimeout !== null) clearTimeout(queryTimeout)
     }
   }
 
@@ -68,7 +64,8 @@
   })
 
   onDestroy(() => {
-    destroyed = false
+    destroyed = true
+    if (queryTimeout !== null) clearTimeout(queryTimeout)
   })
 </script>
 

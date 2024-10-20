@@ -6,6 +6,7 @@ import { defaultTxCostLimit } from '../config'
 
 export const bundlerClient = writable<BundlerClient | undefined>(undefined)
 export const walletAddress = writable<Address>(undefined)
+export const transferAction = writable<'send' | 'receive'>('send')
 export const appSrc = writable<string | undefined>()
 export const primaryColor = writable<string>('#eeeeee')
 export const bgColor = writable<string>('#2f2f2f')

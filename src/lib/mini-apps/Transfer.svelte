@@ -1,6 +1,6 @@
 <script lang="ts">
   import QrScanner from '$lib/QrScanner.svelte'
-  import { bundlerClient } from '$lib/stores'
+  import { bundlerClient, transferAction } from '$lib/stores'
   import { sendTxs } from '$lib/tx'
   import WalletInfo from '$lib/WalletInfo.svelte'
   import { isAddress, zeroAddress, encodeFunctionData, formatUnits, type Address } from 'viem'
@@ -19,7 +19,6 @@
   import Loading from '$lib/Loading.svelte'
 
   let scanningAddress = false
-  let action: 'send' | 'receive' = 'send'
   let to: string = ''
   let amount: number
   let balance: bigint
@@ -121,21 +120,21 @@
       <div class="action-selector">
         <button
           class="send-action-btn"
-          class:active={action === 'send'}
+          class:active={$transferAction === 'send'}
           on:click={() => {
-            action = 'send'
+            $transferAction = 'send'
           }}>Send</button
         >
         <button
           class="receive-action-btn"
-          class:active={action === 'receive'}
+          class:active={$transferAction === 'receive'}
           on:click={() => {
-            action = 'receive'
+            $transferAction = 'receive'
           }}>Receive</button
         >
       </div>
       <div class="action-container">
-        {#if action === 'send'}
+        {#if $transferAction === 'send'}
           <div class="input-container">
             <label for="amount">Amount</label>
             <div class="amount-wrapper">
@@ -189,7 +188,7 @@
               Please ensure the recipient can receive tokens on the {chainInfo.name} network.
             </span>
           </aside>
-        {:else if action === 'receive'}
+        {:else if $transferAction === 'receive'}
           <WalletInfo />
         {/if}
       </div>
