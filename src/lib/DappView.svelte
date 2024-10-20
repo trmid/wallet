@@ -37,7 +37,7 @@
       denyTxReview = reject
     })
 
-    const receipt = await sendTxs(bundlerClient, txs)
+    const receipt = await sendTxs(bundlerClient, txs, $maxGasCost)
     txHash = receipt.receipt.transactionHash
     return receipt.receipt.transactionHash
   }

@@ -1,12 +1,13 @@
 <script lang="ts">
   import QrScanner from '$lib/QrScanner.svelte'
   import { bundlerClient, transferAction } from '$lib/stores'
-  import { sendTxs } from '$lib/tx'
+  import { estimateGasCost, sendTxs } from '$lib/tx'
   import WalletInfo from '$lib/WalletInfo.svelte'
   import { isAddress, zeroAddress, encodeFunctionData, formatUnits, type Address } from 'viem'
   import {
     chainInfo,
     formatPrimaryToken,
+    paymasterAddress,
     primaryTokenAddress,
     primaryTokenDecimals
   } from '../../config'
@@ -17,11 +18,13 @@
   import Balance from '$lib/Balance.svelte'
   import { notify } from '$lib/notification'
   import Loading from '$lib/Loading.svelte'
+  import { onMount } from 'svelte'
 
   let scanningAddress = false
   let to: string = ''
   let amount: number
   let balance: bigint
+  let estimatedGasCost: bigint = 0n
   let balanceComponent: Balance
   let transferTxHash: `0x${string}` | undefined
   let lastTransferDetails:
@@ -68,16 +71,21 @@
         to,
         amount: amountBigint
       }
-      const receipt = await sendTxs($bundlerClient, [
-        {
-          to: primaryTokenAddress,
-          data: encodeFunctionData({
-            abi: parseAbi(['function transfer(address,uint256) view']),
-            functionName: 'transfer',
-            args: [to, amountBigint]
-          })
-        }
-      ])
+
+      const receipt = await sendTxs(
+        $bundlerClient,
+        [
+          {
+            to: primaryTokenAddress,
+            data: encodeFunctionData({
+              abi: parseAbi(['function transfer(address,uint256) view']),
+              functionName: 'transfer',
+              args: [to, amountBigint]
+            })
+          }
+        ],
+        estimatedGasCost * 2n
+      )
       transferTxHash = receipt.receipt.transactionHash
       balanceComponent.queryBalance().catch(console.error)
       to = ''
@@ -90,6 +98,24 @@
       }
     }
   }
+  onMount(async () => {
+    try {
+      if ($bundlerClient) {
+        estimatedGasCost = await estimateGasCost($bundlerClient, [
+          {
+            to: primaryTokenAddress,
+            data: encodeFunctionData({
+              abi: parseAbi(['function transfer(address,uint256) view']),
+              functionName: 'transfer',
+              args: [paymasterAddress, 1n]
+            })
+          }
+        ])
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  })
 </script>
 
 <div class="wrapper">
@@ -178,6 +204,13 @@
             >
               <QrScanner on:qrData={onQrData} />
             </Popup>
+          {/if}
+          {#if estimatedGasCost > 0n}
+            <div class="gas-estimate">
+              <span>Estimated Transfer Cost</span>
+              <span class="dot-line"></span>
+              <span>{formatPrimaryToken(estimatedGasCost)}</span>
+            </div>
           {/if}
           <div class="input-container">
             <button class="send-btn" on:click={send}>Send</button>
@@ -414,6 +447,22 @@
     top: 0.5rem;
     font-size: 32px;
     color: var(--primary);
+    opacity: 0.5;
+  }
+
+  .gas-estimate {
+    padding: 0.5rem;
+    font-size: small;
+    opacity: 0.8;
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+
+  .gas-estimate > .dot-line {
+    flex-grow: 1;
+    border-bottom: 1px dotted currentColor;
     opacity: 0.5;
   }
 
