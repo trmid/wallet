@@ -17,7 +17,6 @@
 
   onMount(async () => {
     isQrEnabled = await QrScanner.hasCamera()
-    console.log(isQrEnabled)
     if (isQrEnabled) {
       qrScanner = new QrScanner(videoElement, handleQrScan, {
         highlightScanRegion: true,
