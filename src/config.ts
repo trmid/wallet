@@ -4,6 +4,7 @@ import { base } from 'viem/chains'
 export const chainInfo = base
 export const primaryTokenAddress: Address = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913'
 export const primaryTokenDecimals = 6
+export const primaryTokenSymbol = 'USDC'
 export const paymasterAddress: Address = '0x00000000000000fb866daaa79352cc568a005d96'
 export const defaultTxCostLimit: bigint = 100000n // in primary token value
 export const formatPrimaryToken: (balance: bigint) => string = (balance) => {
@@ -14,3 +15,17 @@ export const formatPrimaryToken: (balance: bigint) => string = (balance) => {
   })
   return formatter.format(parseFloat(formatUnits(balance, primaryTokenDecimals)))
 }
+export const gasOptions = (): { amount: bigint; text: string }[] => [
+  {
+    amount: defaultTxCostLimit,
+    text: formatPrimaryToken(defaultTxCostLimit)
+  },
+  {
+    amount: defaultTxCostLimit * 10n,
+    text: formatPrimaryToken(defaultTxCostLimit * 10n)
+  },
+  {
+    amount: defaultTxCostLimit * 100n,
+    text: formatPrimaryToken(defaultTxCostLimit * 100n)
+  }
+]

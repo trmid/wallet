@@ -64,10 +64,14 @@
 
     communicator.on(Methods.sendTransactions, async (msg) => {
       console.log(msg)
-      const transactions = ((msg.data.params as any).txs as any[]).map(({ to, ...rest }) => ({
-        to,
-        ...rest
-      }))
+      const transactions = ((msg.data.params as any).txs as any[]).map(
+        ({ to, data, value, ...rest }) => ({
+          to,
+          data,
+          value: value === undefined ? undefined : BigInt(value),
+          ...rest
+        })
+      )
       const txHash = await sendTxs(transactions)
       if (txHash) {
         communicator?.send(

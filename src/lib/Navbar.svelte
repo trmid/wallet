@@ -3,14 +3,9 @@
   import Popup from './Popup.svelte'
   import Address from './Address.svelte'
   import { appSrc, bgColor, bundlerClient, primaryColor, walletAddress } from './stores'
-  import { chainInfo } from '../config'
+  import WalletInfo from './WalletInfo.svelte'
 
   let showAccountInfo = false
-  let qrCodeContainer: HTMLDivElement | undefined
-
-  $: if (qrCodeContainer) {
-    new QRCode(qrCodeContainer, $walletAddress)
-  }
 </script>
 
 <nav>
@@ -82,23 +77,7 @@
     --popup-padding="3rem"
     --popup-transform="translate(-50%, -50%)"
   >
-    <div class="wallet-info">
-      <h3>Your Wallet</h3>
-      <button>
-        <Address address={$walletAddress} enableCopy={true}>
-          <i class="icofont-ui-copy" slot="before"></i>
-        </Address>
-      </button>
-      <div class="qr-container" bind:this={qrCodeContainer}></div>
-      <br />
-      <aside class="chain-warning">
-        <i class="icofont-warning-alt"></i>
-        <span
-          >You can receive tokens to this address on the {chainInfo.name}
-          network.</span
-        >
-      </aside>
-    </div>
+    <WalletInfo />
   </Popup>
 {/if}
 
@@ -136,8 +115,7 @@
 
   #logo {
     position: relative;
-    top: 1px;
-    font-size: 28px;
+    font-size: 32px;
     font-family: 'Supermercado One', sans-serif;
     margin-left: 3px;
   }
@@ -148,44 +126,5 @@
     align-items: center;
     gap: 0.5rem;
     font-family: monospace;
-  }
-
-  .wallet-info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-
-  .qr-container {
-    width: 300px;
-    height: 300px;
-    max-width: 90vw;
-    max-height: 90vh;
-    background-color: white;
-    border-radius: 1rem;
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .chain-warning {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    gap: 0.5rem;
-    max-width: 300px;
-    padding: 0.5rem;
-  }
-
-  .chain-warning > i {
-    font-size: 24px;
-  }
-
-  :global(.qr-container > img) {
-    width: 256px;
-    height: 256px;
   }
 </style>

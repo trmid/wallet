@@ -3,6 +3,7 @@
   import { activePopupCount } from './stores'
 
   export let showCloseButton = true
+  export let style: string = ''
 
   const dispatch = createEventDispatcher()
   const requestClose = () => {
@@ -27,7 +28,7 @@
 
 <!-- svelte-ignore a11y-no-static-element-interactions -->
 <!-- svelte-ignore a11y-click-events-have-key-events -->
-<div id="popup" on:click|stopPropagation on:pointerdown|stopPropagation>
+<div id="popup" on:click|stopPropagation on:pointerdown|stopPropagation {style}>
   <div>
     <slot />
   </div>
@@ -54,7 +55,7 @@
     transform: var(--popup-transform, '');
     padding: var(--popup-padding, 1rem);
     box-shadow: 3px 3px 5px #0008;
-    border: 1px solid currentColor;
+    border: 0.5rem solid currentColor;
     border-radius: var(--popup-border-radius, 1rem);
     overflow: auto;
   }

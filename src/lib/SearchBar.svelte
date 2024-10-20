@@ -3,6 +3,7 @@
   import { appSrc, bookmarkInfo, bookmarks } from './stores'
   import Popup from './Popup.svelte'
   import { fetchManifest, updateBookmarkInfo } from './web'
+  import { primaryTokenSymbol } from '../config'
 
   const defaultApp = new URL('https://smold.app/').toString()
 
@@ -18,8 +19,17 @@
   }
 
   const go = async () => {
+    if (!hotSrc.match(/^[a-z]+\:\/\//)) {
+      hotSrc = `https://${hotSrc}`
+    }
     hotSrc = new URL(hotSrc).toString()
     appSrc.set(hotSrc)
+    closeAllModals()
+  }
+
+  const goHome = () => {
+    $appSrc = 'wallet://home'
+    closeAllModals()
   }
 
   const showBookmarks = () => {
@@ -82,6 +92,14 @@
       localStorage.removeItem('bookmarkInfo')
       $bookmarkInfo = {}
     }
+    $bookmarkInfo['wallet://transfer'] = {
+      name: 'Transfer',
+      description: `Send or receive ${primaryTokenSymbol} to your wallet.`,
+      icon: '/icon-square.svg',
+      backgroundColor:
+        document.documentElement.computedStyleMap().get('--bg')?.toString() ?? 'white',
+      color: document.documentElement.computedStyleMap().get('--primary')?.toString() ?? 'black'
+    }
 
     // Queue manifest updates for bookmarks not stored in info
     for (const bookmark of $bookmarks) {
@@ -115,6 +133,11 @@
   <div>
     <!-- svelte-ignore a11y-no-static-element-interactions -->
     <div class="input-wrapper" on:click|stopPropagation on:keydown|stopPropagation>
+      {#if $appSrc !== 'wallet://home'}
+        <button title="Home" on:click={goHome}>
+          <i class="icofont-ui-home"></i>
+        </button>
+      {/if}
       <input
         id="src-input"
         type="text"
@@ -128,7 +151,7 @@
           srcInput.select()
         }}
       />
-      {#if hotSrc === $appSrc && $appSrc !== 'wallet://home'}
+      {#if hotSrc === $appSrc && !$appSrc.startsWith('wallet://')}
         <button
           on:click={toggleBookmark}
           class="bookmark-btn"
@@ -146,7 +169,8 @@
           --popup-height="fit-content"
           --popup-max-height="80vh"
           --popup-padding="0.5rem"
-          --popup-border-radius="0.25rem"
+          --popup-border-radius="0.5rem"
+          style="border: 0.25rem solid currentColor;"
           showCloseButton={false}
         >
           <div id="bookmarks">
@@ -190,7 +214,7 @@
         </Popup>
       {/if}
     </div>
-    <button on:click={go}>Go <i class="icofont-arrow-right"></i></button>
+    <button on:click={go}><i class="icofont-arrow-right"></i></button>
   </div>
 </nav>
 
@@ -217,11 +241,11 @@
     flex-wrap: nowrap;
     gap: 0.25rem;
     flex-grow: 1;
+    min-width: 0;
   }
 
   #src-input {
-    min-width: 100px;
-    max-width: 90vw;
+    min-width: 50px;
     flex-grow: 1;
     flex-shrink: 1;
   }
@@ -281,6 +305,7 @@
     width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .bookmark > button.delete-btn {

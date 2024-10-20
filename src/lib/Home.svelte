@@ -4,7 +4,7 @@
 
 <div class="wrapper">
   <div class="container">
-    {#each $bookmarks as bookmark}
+    {#each ['wallet://transfer', ...$bookmarks] as bookmark}
       <a
         on:click|preventDefault={() => ($appSrc = bookmark)}
         href={bookmark}
@@ -38,13 +38,12 @@
   .container {
     padding: 1rem;
     width: 1280px;
-    max-width: 100vw;
+    max-width: 100%;
     max-height: fit-content;
     margin: 0 auto;
-    display: flex;
-    justify-content: flex-start;
-    align-items: flex-start;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-auto-rows: minmax(100px, auto);
     gap: 1rem;
   }
 
@@ -60,7 +59,6 @@
     box-shadow: 3px 3px 7px #0008;
     overflow: hidden;
     width: 100%;
-    max-width: 220px;
     height: 150px;
   }
 
@@ -79,25 +77,27 @@
     font-size: small;
   }
 
+  @media (max-width: 1024px) {
+    .container {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  @media (max-width: 900px) {
+    .container {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
   @media (max-width: 720px) {
     .container {
-      display: grid;
       grid-template-columns: repeat(2, 1fr);
-      grid-auto-rows: minmax(100px, auto);
-    }
-
-    .bookmark {
-      max-width: none;
     }
   }
 
   @media (max-width: 400px) {
     .container {
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      align-items: center;
-      flex-wrap: nowrap;
+      grid-template-columns: repeat(1, 1fr);
     }
   }
 </style>

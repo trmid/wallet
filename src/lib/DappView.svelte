@@ -1,36 +1,17 @@
 <script lang="ts">
-  import { type PublicClient, parseAbi } from 'viem'
+  import { type PublicClient } from 'viem'
   import IFrameApp from './IFrameApp.svelte'
   import { activePopupCount, appSrc, walletAddress, maxGasCost } from './stores'
   import type { TX } from './types'
-  import type { BundlerClient, UserOperationCall } from 'viem/account-abstraction'
+  import type { BundlerClient } from 'viem/account-abstraction'
   import Popup from './Popup.svelte'
   import { shortAddress } from './address'
   import Home from './Home.svelte'
-  import {
-    chainInfo,
-    defaultTxCostLimit,
-    primaryTokenAddress,
-    paymasterAddress,
-    formatPrimaryToken
-  } from '../config'
+  import { chainInfo, gasOptions } from '../config'
+  import Transfer from './mini-apps/Transfer.svelte'
+  import { sendTxs } from './tx'
 
   export let bundlerClient: BundlerClient
-
-  const gasOptions: { amount: bigint; text: string }[] = [
-    {
-      amount: defaultTxCostLimit,
-      text: formatPrimaryToken(defaultTxCostLimit)
-    },
-    {
-      amount: defaultTxCostLimit * 10n,
-      text: formatPrimaryToken(defaultTxCostLimit * 10n)
-    },
-    {
-      amount: defaultTxCostLimit * 100n,
-      text: formatPrimaryToken(defaultTxCostLimit * 100n)
-    }
-  ]
 
   let publicClient: PublicClient
   $: publicClient = bundlerClient.client as PublicClient
@@ -56,22 +37,7 @@
       denyTxReview = reject
     })
 
-    const userOpHash = await bundlerClient.sendUserOperation({
-      paymasterContext: {
-        token: primaryTokenAddress
-      },
-      calls: [
-        {
-          to: primaryTokenAddress,
-          abi: parseAbi(['function approve(address,uint256) view']),
-          functionName: 'approve',
-          args: [paymasterAddress, BigInt($maxGasCost)]
-        } as any,
-        ...(txs as UserOperationCall[])
-      ]
-    })
-    const receipt = await bundlerClient.waitForUserOperationReceipt({ hash: userOpHash })
-    console.log(receipt)
+    const receipt = await sendTxs(bundlerClient, txs)
     txHash = receipt.receipt.transactionHash
     return receipt.receipt.transactionHash
   }
@@ -80,6 +46,8 @@
 <div id="container">
   {#if $appSrc === 'wallet://home'}
     <Home></Home>
+  {:else if $appSrc === 'wallet://transfer'}
+    <Transfer></Transfer>
   {:else if $appSrc && $walletAddress}
     {#key $appSrc}
       {#key $walletAddress}
@@ -147,7 +115,7 @@
       {/each}
       <div class="gas-cost">
         <strong>Max gas cost:</strong>
-        {#each gasOptions as gasOption}
+        {#each gasOptions() as gasOption}
           <button
             class="gas-option"
             class:selected={$maxGasCost == gasOption.amount}
@@ -190,7 +158,7 @@
       --popup-padding="1rem"
       --popup-transform="translate(-50%, -50%)"
     >
-      <h3>Transaction Verified</h3>
+      <h3>Transaction Sent</h3>
       <h4>Receipt:</h4>
       <p>
         <a
