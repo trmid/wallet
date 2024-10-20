@@ -64,7 +64,6 @@
   <Popup
     showCloseButton={true}
     on:requestClose={() => {
-      console.log('close')
       showAccountInfo = false
     }}
     --popup-position="fixed"

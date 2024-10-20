@@ -81,7 +81,6 @@
       const fileBlob = new Blob([JSON.stringify(credentialInfo)], { type: 'application/json' })
       const aTag = document.createElement('a')
       aTag.href = URL.createObjectURL(fileBlob)
-      console.log(aTag.href)
       aTag.download = `Credential Backup - ${name}.json`
       aTag.click()
     }

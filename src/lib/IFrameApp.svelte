@@ -63,7 +63,6 @@
     })
 
     communicator.on(Methods.sendTransactions, async (msg) => {
-      console.log(msg)
       const transactions = ((msg.data.params as any).txs as any[]).map(
         ({ to, data, value, ...rest }) => ({
           to,

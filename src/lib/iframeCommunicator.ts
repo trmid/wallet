@@ -112,7 +112,6 @@ export class IFrameCommunicator {
     const msg = error
       ? MessageFormatter.makeErrorResponse(requestId, data as string, sdkVersion)
       : MessageFormatter.makeResponse(requestId, data, sdkVersion)
-    // console.log("send", { msg });
     this.iframeRef?.contentWindow?.postMessage(msg, '*')
   }
 
@@ -121,8 +120,6 @@ export class IFrameCommunicator {
     const hasHandler = this.canHandleMessage(msg)
 
     if (validMessage && hasHandler) {
-      // console.log("incoming", { msg: msg.data });
-
       const handler = this.handlers.get(msg.data.method)
       try {
         // @ts-expect-error Handler existence is checked in this.canHandleMessage
