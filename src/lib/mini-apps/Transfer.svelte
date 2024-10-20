@@ -170,16 +170,14 @@
               --popup-position="fixed"
               --popup-top="50%"
               --popup-left="50%"
-              --popup-width="500px"
+              --popup-width="fit-content"
               --popup-max-width="90vw"
               --popup-height="fit-content"
               --popup-max-height="90vh"
               --popup-padding="0"
               --popup-transform="translate(-50%, -50%)"
             >
-              <div class="qr-wrapper">
-                <QrScanner on:qrData={onQrData} />
-              </div>
+              <QrScanner on:qrData={onQrData} />
             </Popup>
           {/if}
           <div class="input-container">
@@ -340,12 +338,6 @@
 
   .panel {
     padding: 1rem;
-  }
-
-  .qr-wrapper {
-    overflow: hidden;
-    border-radius: 0.5rem;
-    max-height: 100vmin;
   }
 
   .input-container {

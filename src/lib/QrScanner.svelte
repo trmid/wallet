@@ -2,6 +2,9 @@
   import QrScanner from 'qr-scanner'
   import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 
+  export let width: string = '300px'
+  export let height: string = '300px'
+
   const dispatch = createEventDispatcher()
 
   let qrScanner: QrScanner | undefined
@@ -32,12 +35,25 @@
   })
 </script>
 
-<!-- svelte-ignore a11y-media-has-caption -->
-<video id="camera-video" bind:this={videoElement} />
+<div class="camera-container" style:width style:height>
+  <!-- svelte-ignore a11y-media-has-caption -->
+  <video class="camera-video" bind:this={videoElement} style:width style:height />
+</div>
 
 <style>
-  #camera-video {
-    width: 100%;
+  .camera-container {
+    position: relative;
+    overflow: hidden;
+    max-height: 90vmin;
+    max-width: 90vmin;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .camera-video {
     display: block;
+    overflow: hidden;
+    object-fit: cover;
   }
 </style>
