@@ -5,7 +5,10 @@
   import { fetchManifest, updateBookmarkInfo } from './web'
   import { primaryTokenSymbol } from '../config'
 
-  const defaultApp = new URL('https://smold.app/').toString()
+  const defaultApps = [
+    new URL('https://classic.cabana.fi/').toString(),
+    new URL('https://smold.app/').toString()
+  ]
 
   let hotSrc = 'wallet://home'
   let mounted = false
@@ -82,7 +85,7 @@
       }
     }
     if ($bookmarks.length == 0) {
-      $bookmarks = [defaultApp]
+      $bookmarks = [...defaultApps]
     }
     saveBookmarks()
 
