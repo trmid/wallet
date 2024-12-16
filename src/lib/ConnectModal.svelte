@@ -51,7 +51,8 @@
       const parsed = JSON.parse(str)
       return [
         {
-          ...parsed,
+          paymaster: parsed.paymaster,
+          token: parsed.token,
           postOpGas: BigInt(parsed.postOpGas),
           exchangeRate: BigInt(parsed.exchangeRate),
           exchangeRateNativeToUsd: BigInt(parsed.exchangeRateNativeToUsd)
@@ -60,7 +61,8 @@
     },
     (value) =>
       JSON.stringify({
-        ...value[0],
+        paymaster: value[0].paymaster,
+        token: value[0].token,
         postOpGas: value[0].postOpGas.toString(),
         exchangeRate: value[0].exchangeRate.toString(),
         exchangeRateNativeToUsd: value[0].exchangeRateNativeToUsd.toString()
