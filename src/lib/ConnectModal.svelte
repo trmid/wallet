@@ -8,7 +8,7 @@
     entryPoint06Address,
     type EntryPointVersion
   } from 'viem/account-abstraction'
-  import { createPimlicoClient } from 'permissionless/clients/pimlico'
+  import { createPimlicoClient, type PimlicoClient } from 'permissionless/clients/pimlico'
   import {
     getCredentialCreationOptions,
     parseCredentialPublicKey,
@@ -18,11 +18,55 @@
   import { english } from 'viem/accounts'
   import { onMount } from 'svelte'
   import Popup from './Popup.svelte'
-  import { chainInfo } from '../config'
+  import { chainInfo, primaryTokenAddress } from '../config'
+  import { LocalStorageCache } from './cache'
 
   let fileInput: HTMLInputElement
   let credentialFiles: FileList
   let triedToConnect = false
+  let gasPriceCache = new LocalStorageCache<{
+    maxFeePerGas: bigint
+    maxPriorityFeePerGas: bigint
+  }>(
+    'getUserOperationGasPrice.fast',
+    (str) => {
+      const parsed = JSON.parse(str)
+      return {
+        maxFeePerGas: BigInt(parsed.maxFeePerGas),
+        maxPriorityFeePerGas: BigInt(parsed.maxPriorityFeePerGas)
+      }
+    },
+    (value) =>
+      JSON.stringify({
+        maxFeePerGas: value.maxFeePerGas.toString(),
+        maxPriorityFeePerGas: value.maxPriorityFeePerGas.toString()
+      }),
+    60_000 // 1 min TTL
+  )
+  let primaryTokenQuoteCache = new LocalStorageCache<
+    Awaited<ReturnType<PimlicoClient['getTokenQuotes']>>
+  >(
+    'getTokenQuotes:primaryToken',
+    (str) => {
+      const parsed = JSON.parse(str)
+      return [
+        {
+          ...parsed,
+          postOpGas: BigInt(parsed.postOpGas),
+          exchangeRate: BigInt(parsed.exchangeRate),
+          exchangeRateNativeToUsd: BigInt(parsed.exchangeRateNativeToUsd)
+        }
+      ]
+    },
+    (value) =>
+      JSON.stringify({
+        ...value[0],
+        postOpGas: value[0].postOpGas.toString(),
+        exchangeRate: value[0].exchangeRate.toString(),
+        exchangeRateNativeToUsd: value[0].exchangeRateNativeToUsd.toString()
+      }),
+    600_000 // 10 min TTL
+  )
 
   $: credentialFiles && handleCredentialFileUpload(credentialFiles).catch(console.error)
 
@@ -114,16 +158,39 @@
         version: '0.6' as EntryPointVersion
       }
     })
+    const pimlicoProxy = new Proxy(pimlicoClient, {
+      get(target: typeof pimlicoClient, prop, receiver) {
+        if (prop === 'getTokenQuotes') {
+          const getTokenQuotes = target[prop]
+          return function (this: any, ...args) {
+            if (
+              (args[0].chain?.id ?? chainInfo.id) == chainInfo.id &&
+              args[0].tokens.length == 1 &&
+              args[0].tokens[0] === primaryTokenAddress
+            ) {
+              return primaryTokenQuoteCache.value(() =>
+                getTokenQuotes.apply(this === receiver ? target : this, args)
+              )
+            } else {
+              return getTokenQuotes.apply(this === receiver ? target : this, args)
+            }
+          } as typeof pimlicoClient.getTokenQuotes
+        }
+        return Reflect.get(target, prop, receiver)
+      }
+    })
     bundlerClient.set(
       createBundlerClient({
         chain: chainInfo,
         client: publicClient,
         account: smartAccount,
-        paymaster: pimlicoClient,
+        paymaster: pimlicoProxy,
         transport: http(PUBLIC_BUNDLER_RPC_URL),
         userOperation: {
           estimateFeesPerGas: async () => {
-            return (await pimlicoClient.getUserOperationGasPrice()).fast
+            return await gasPriceCache.value(
+              async () => (await pimlicoClient.getUserOperationGasPrice()).fast
+            )
           }
         }
       })

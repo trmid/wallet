@@ -2,7 +2,6 @@ import { writable } from 'svelte/store'
 import { type Address } from 'viem'
 import type { BundlerClient } from 'viem/account-abstraction'
 import { deriveColorsFromManifest, fetchManifest, updateBookmarkInfo } from './web'
-import { defaultTxCostLimit } from '../config'
 
 export const bundlerClient = writable<BundlerClient | undefined>(undefined)
 export const walletAddress = writable<Address>(undefined)
@@ -10,7 +9,6 @@ export const transferAction = writable<'send' | 'receive'>('send')
 export const appSrc = writable<string | undefined>()
 export const primaryColor = writable<string>('#eeeeee')
 export const bgColor = writable<string>('#2f2f2f')
-export const maxGasCost = writable<bigint>(defaultTxCostLimit)
 export const activePopupCount = writable<number>(0)
 export const bookmarks = writable<string[]>([])
 export const bookmarkInfo = writable<

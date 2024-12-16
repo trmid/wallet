@@ -45,9 +45,10 @@ export const estimateGasCost = async (bundlerClient: BundlerClient, txs: TX[]) =
     calls: [gasApprovalTx(2n ** 256n - 1n), ...txs]
   })
 
+  const verificationGasLimit = op.verificationGasLimit < 20_000n ? op.verificationGasLimit : 20_000n // use lower gas limit since pimlico heavily over-estimates
   const userOperationMaxGas =
     op.preVerificationGas +
-    op.verificationGasLimit +
+    verificationGasLimit +
     op.callGasLimit +
     ((op as any)?.paymasterVerificationGasLimit || 0n) +
     ((op as any)?.paymasterPostOpGasLimit || 0n)

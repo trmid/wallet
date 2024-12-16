@@ -1,15 +1,16 @@
 <script lang="ts">
   import { type PublicClient } from 'viem'
   import IFrameApp from './IFrameApp.svelte'
-  import { activePopupCount, appSrc, walletAddress, maxGasCost } from './stores'
+  import { activePopupCount, appSrc, walletAddress } from './stores'
   import type { TX } from './types'
   import type { BundlerClient } from 'viem/account-abstraction'
   import Popup from './Popup.svelte'
   import { shortAddress } from './address'
   import Home from './Home.svelte'
-  import { chainInfo, gasOptions } from '../config'
+  import { chainInfo } from '../config'
   import Transfer from './mini-apps/Transfer.svelte'
-  import { sendTxs } from './tx'
+  import { estimateGasCost, sendTxs } from './tx'
+  import GasEstimate from './GasEstimate.svelte'
 
   export let bundlerClient: BundlerClient
 
@@ -18,6 +19,7 @@
 
   let txsToReview: TX[] = []
   let txsReviewed: boolean[] = []
+  let estimatedGasCost: bigint = 0n
   let approveTxReview: ((x: any) => void) | undefined
   let denyTxReview: ((reason: string) => void) | undefined
   let txHash: `0x${string}` | undefined
@@ -32,12 +34,13 @@
 
     txsToReview = txs
     txsReviewed = txs.map(() => false)
+    estimatedGasCost = await estimateGasCost(bundlerClient, txsToReview)
     await new Promise((resolve, reject) => {
       approveTxReview = resolve
       denyTxReview = reject
     })
 
-    const receipt = await sendTxs(bundlerClient, txs, $maxGasCost)
+    const receipt = await sendTxs(bundlerClient, txs, estimatedGasCost * 2n)
     txHash = receipt.receipt.transactionHash
     return receipt.receipt.transactionHash
   }
@@ -113,16 +116,7 @@
           </a>
         </div>
       {/each}
-      <div class="gas-cost">
-        <strong>Max gas cost:</strong>
-        {#each gasOptions() as gasOption}
-          <button
-            class="gas-option"
-            class:selected={$maxGasCost == gasOption.amount}
-            on:click={() => ($maxGasCost = gasOption.amount)}>{gasOption.text}</button
-          >
-        {/each}
-      </div>
+      <GasEstimate label="Estimated Gas Cost" {estimatedGasCost} />
       <button
         class="tx-btn"
         disabled={txsReviewed.includes(false)}
@@ -186,8 +180,7 @@
     z-index: 2;
   }
 
-  .tx-to-review,
-  .gas-cost {
+  .tx-to-review {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -223,10 +216,5 @@
 
   .tx-btn {
     font-size: large;
-  }
-
-  .gas-option.selected {
-    color: var(--bg);
-    background-color: var(--primary);
   }
 </style>
